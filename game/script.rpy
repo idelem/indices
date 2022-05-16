@@ -27,12 +27,20 @@
         def n(self, value):
             self._n = value
         
-        def roll(self):
-            self.result = renpy.random.choice(self.side_list)
+        def roll(self, times=1):
+            if times < 1:
+                self.result = "你丢出了虚空"
+                return
+            self.result = ""
+            results = []
+            for i in range(times):
+                results.append(renpy.random.choice(self.side_list))
+            self.result = ", ".join(results)
 
 default dices = []
 default dice_map = {}
 default dice_icon = Text("没图", xysize=(120,120), background=Solid("#fff"))
+default roll_times = 1
 
 screen multi_input(keys, obj):
     # 目前只能编辑字符串字段！
@@ -68,6 +76,10 @@ screen single_input(iv, order=-1):
 screen dicebag():
     vbox:
         textbutton "新建骰子" action Call("make_dice")
+        hbox:
+            textbutton "多丢一次" action [SetVariable("roll_times", roll_times+1)]
+            textbutton "[roll_times]" action NullAction()
+            textbutton "少丢一次" action [SetVariable("roll_times", roll_times-1)]
         for i in range(len(dices)):
             $ d = dices[i]
             hbox:
@@ -78,7 +90,7 @@ screen dicebag():
                         add "images/dice/{}.png".format(ds)
                     else:
                         text ds
-                textbutton "我丢" action [Function(d.roll)]
+                textbutton "我丢 [roll_times] 次" action [Function(d.roll, times=roll_times)]
                 text "结果：[d.result]"
     pass
 
